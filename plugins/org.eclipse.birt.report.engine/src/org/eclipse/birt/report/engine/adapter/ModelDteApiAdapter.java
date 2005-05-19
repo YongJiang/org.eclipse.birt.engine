@@ -123,17 +123,16 @@ public class ModelDteApiAdapter
         // Adapt extended data source elements
         
         // validate that a required attribute is specified
-        String driverName = source.getDriverName();
+        String driverName = source.getExtensionID();
         if ( driverName == null || driverName.length() == 0 )
         {
-            throw new EngineException( "Missing driverName in data source definition, " + source.getName() ); //$NON-NLS-1$
+            throw new EngineException( "Missing extenion id in data source definition, " + source.getName() ); //$NON-NLS-1$
         }
         dteSource.setDriverName( driverName );
 
         // static ROM properties defined by the ODA driver extension
-        // of the odaDriverModel extension point
         Map staticProps = getExtensionProperties( source, 
-			                	source.getExtensionName(), 
+			                	source.getExtensionID(), 
 			                	source.getExtensionPropertyDefinitionList() );
 	    if ( staticProps != null && ! staticProps.isEmpty() )
 	    {	    
@@ -209,18 +208,17 @@ public class ModelDteApiAdapter
             
         // static query text and dynamic query script
         dteDataSet.setQueryText( modelDataSet.getQueryText() );
-        dteDataSet.setQueryScript( modelDataSet.getQueryScript() );         
+//        dteDataSet.setQueryScript( modelDataSet.getQueryScript() );         
         
         // type of extended data set
-        dteDataSet.setDataSetType( modelDataSet.getType() );
+        dteDataSet.setDataSetType( modelDataSet.getExtensionID() );
         
         // result set name
         dteDataSet.setPrimaryResultSetName( modelDataSet.getResultSetName() );
         
         // static ROM properties defined by the ODA driver extension
-        // of the odaDriverModel extension point
         Map staticProps = getExtensionProperties( modelDataSet, 
-				                modelDataSet.getExtensionName(), 
+				                modelDataSet.getExtensionID(), 
 				                modelDataSet.getExtensionPropertyDefinitionList() );
 	    if ( staticProps != null && ! staticProps.isEmpty() )
 	    {	    
@@ -428,10 +426,10 @@ public class ModelDteApiAdapter
         // no expression to define a computed column        
         if ( modelCmptdColumn.getExpression() == null ) {
         	throw new EngineException( MessageConstants.MISSING_COMPUTED_COLUMN_EXPRESSION_EXCEPTION,
-					modelCmptdColumn.getColumnName( ) );
+					modelCmptdColumn.getName( ) );
         }
         
-        return new ComputedColumn( modelCmptdColumn.getColumnName(), 
+        return new ComputedColumn( modelCmptdColumn.getName(), 
                 					modelCmptdColumn.getExpression() );
     }
     
@@ -629,9 +627,13 @@ public class ModelDteApiAdapter
 		
 		    // use fully qualified name to get property value
 		    Object propValueObj = dataHandle.getProperty( modelExtProp.getName() );                
-		    String propValue = ( propValueObj == null ) ?
-		        					null : propValueObj.toString();
-		    properties.put( propName, propValue );
+		    
+		    // skip unset property
+		    if ( propValueObj != null )
+		    {
+		    	String propValue = propValueObj.toString();
+		    	properties.put( propName, propValue );
+		    }
 		}
 		return properties;
     }
