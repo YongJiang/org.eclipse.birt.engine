@@ -132,7 +132,6 @@ public class ModelDteApiAdapter
 
         // static ROM properties defined by the ODA driver extension
         Map staticProps = getExtensionProperties( source, 
-			                	source.getExtensionID(), 
 			                	source.getExtensionPropertyDefinitionList() );
 	    if ( staticProps != null && ! staticProps.isEmpty() )
 	    {	    
@@ -206,9 +205,8 @@ public class ModelDteApiAdapter
             
         // Adapt extended data set elements
             
-        // static query text and dynamic query script
+        // static query text
         dteDataSet.setQueryText( modelDataSet.getQueryText() );
-//        dteDataSet.setQueryScript( modelDataSet.getQueryScript() );         
         
         // type of extended data set
         dteDataSet.setDataSetType( modelDataSet.getExtensionID() );
@@ -218,7 +216,6 @@ public class ModelDteApiAdapter
         
         // static ROM properties defined by the ODA driver extension
         Map staticProps = getExtensionProperties( modelDataSet, 
-				                modelDataSet.getExtensionID(), 
 				                modelDataSet.getExtensionPropertyDefinitionList() );
 	    if ( staticProps != null && ! staticProps.isEmpty() )
 	    {	    
@@ -608,7 +605,7 @@ public class ModelDteApiAdapter
      * name and value pairs in String values and returns them in a Map
      */
     private Map getExtensionProperties( ReportElementHandle dataHandle, 
-            		String extensionName, List driverPropList )
+            							List driverPropList )
     {
         if ( driverPropList == null || driverPropList.isEmpty() )
             return null;		// nothing to add
@@ -619,47 +616,23 @@ public class ModelDteApiAdapter
 		{
 		    IPropertyDefn modelExtProp = (IPropertyDefn) elmtIter.next();
 		
-		    // first strips extension name prefix and separator from 
-		    // property's fully qualified name
-		    String propName = stripPropNamePrefix( modelExtProp.getName(),
-		        					extensionName );
+		    // First get extension property's name
+		    String propName = modelExtProp.getName();
 		    assert( propName != null && propName.length() > 0 );
 		
-		    // use fully qualified name to get property value
-		    Object propValueObj = dataHandle.getProperty( modelExtProp.getName() );                
-		    
-		    // skip unset property
-		    if ( propValueObj != null )
-		    {
-		    	String propValue = propValueObj.toString();
-		    	properties.put( propName, propValue );
-		    }
+		    // Use property name to get property value
+		    Object propValueObj = dataHandle.getProperty( modelExtProp.getName() );	    
+
+		    /* An ODA consumer does not distinguish whether a property value
+		     * is not set or explicitly set to null.  
+		     * Its handling is pushed down to the underlying data provider.
+		     */
+		    String propValue = ( propValueObj == null ) ?
+								null : propValueObj.toString();
+		    properties.put( propName, propValue );
 		}
+		
 		return properties;
     }
     
-    /* Strips the given prefix and separator characters
-     * and returns the remaining string.
-     */
-    private String stripPropNamePrefix( String fromString, String prefix )
-    {
-        if ( fromString == null || fromString.length() == 0 )
-            return fromString;	// nothing to strip from
-        
-        if ( prefix == null || prefix.length() == 0 )
-            return fromString;	// nothing to strip
-        
-        if ( ! fromString.startsWith( prefix ) )
-            return fromString;	// already stripped
-        
-        // verify that given fromString has characters beyond
-        // the prefix separator
-        String separator = "::";
-        int prefixLen = prefix.length();
-        int prefixSeprLen = prefixLen + separator.length();
-        assert( fromString.length() > prefixSeprLen &&
-                separator.equals( fromString.substring( prefixLen, prefixSeprLen ) ));
-        
-        return fromString.substring( prefixSeprLen );
-    }
 }
