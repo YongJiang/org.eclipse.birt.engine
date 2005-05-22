@@ -128,7 +128,7 @@ public class ModelDteApiAdapter
         {
             throw new EngineException( "Missing extenion id in data source definition, " + source.getName() ); //$NON-NLS-1$
         }
-        dteSource.setDriverName( driverName );
+        dteSource.setExtensionID( driverName );
 
         // static ROM properties defined by the ODA driver extension
         Map staticProps = getExtensionProperties( source, 
@@ -209,7 +209,7 @@ public class ModelDteApiAdapter
         dteDataSet.setQueryText( modelDataSet.getQueryText() );
         
         // type of extended data set
-        dteDataSet.setDataSetType( modelDataSet.getExtensionID() );
+        dteDataSet.setExtensionID( modelDataSet.getExtensionID() );
         
         // result set name
         dteDataSet.setPrimaryResultSetName( modelDataSet.getResultSetName() );
