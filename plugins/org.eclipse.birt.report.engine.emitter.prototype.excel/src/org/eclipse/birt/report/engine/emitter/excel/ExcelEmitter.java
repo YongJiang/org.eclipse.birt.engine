@@ -133,7 +133,7 @@ public class ExcelEmitter implements IContentEmitter
 		catch ( Exception e )
 		{
 			logger.log( Level.WARNING, e.getMessage( ), e );
-			throw new RuntimeException( e );
+			throw new RuntimeException( "Error Occur!" );
 		}
 	}
 

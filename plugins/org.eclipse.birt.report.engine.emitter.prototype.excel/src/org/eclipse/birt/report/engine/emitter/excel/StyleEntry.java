@@ -68,10 +68,9 @@ public class StyleEntry implements StyleConstant,Serializable
 		int code = 0;
 
 		for ( int i = 0; i < StyleConstant.COUNT; i++ )
-		{
-			String value = props[i] == null ? NULL : props[i];
-			code += value.hashCode( ) * 2 + 1;
-				
+		{			
+			code += props[i].hashCode( ) * 2 + 1;
+
 			if ( Integer.MAX_VALUE == code )
 			{
 				break;
@@ -81,5 +80,5 @@ public class StyleEntry implements StyleConstant,Serializable
 		return code;
 	}
 
-	private String[] props = null;	
+	private String[] props = null;
 }

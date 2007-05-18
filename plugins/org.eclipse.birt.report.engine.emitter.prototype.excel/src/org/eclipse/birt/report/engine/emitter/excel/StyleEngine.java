@@ -34,10 +34,11 @@ public class StyleEngine implements IListVisitor
 
 	private Stack pos = new Stack( );
 	private Hashtable style2id = new Hashtable( );
-	private Hashtable style2top = new Hashtable();
 
 	// Save styles which are not able to calculate now.
-	private ListBuffer dataMap = null;	
+	private ListBuffer dataMap = null;
+
+	private boolean istop = true;
 
 	/**
 	 * 
@@ -62,25 +63,20 @@ public class StyleEngine implements IListVisitor
 		spans.push( span );
 		styles.push( entry );
 		pos.push( new Integer( start ) );
-		style2top.put( entry, Boolean.TRUE );
+		istop = true;
 	}
 
 	public void calculateTopStyles( )
 	{
-		if ( styles.size( ) > 0 )
+		if ( styles.size( ) != 0 && istop )
 		{
-			StyleEntry style = (StyleEntry)styles.peek( );
-			
-			if(((Boolean)style2top.get( style )).booleanValue( )) 
-			{	
-				Span span = (Span) spans.peek( );
+			Span span = (Span) spans.peek( );
 
-				int start = ( (Integer) pos.peek( ) ).intValue( );
+			int start = ( (Integer) pos.peek( ) ).intValue( );
 
-				applyContainerTopBorder( span, start );
+			applyContainerTopBorder( span, start );
 
-				style2top.put( style, Boolean.FALSE );
-			}	
+			istop = false;
 		}
 	}
 
@@ -117,9 +113,9 @@ public class StyleEngine implements IListVisitor
 		{
 			StyleBuilder.applyBottomBorder( entry, ( (Data) dataMap.get( i
 					+ col, cp ) ).style );
-		}
+		}		
 		
-		style2top.remove( entry );
+		istop = true;
 	}
 
 	public Span getContainerSpan( )
