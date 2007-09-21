@@ -12,6 +12,7 @@ package org.eclipse.birt.report.engine.emitter.ppt;
 
 import java.awt.Color;
 import java.awt.Image;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -49,7 +50,6 @@ public class PPTWriter
 	/**
 	 * Output stream where postscript to be output.
 	 */
-	// protected PrintStream pptOutput = System.out;
 	private PrintWriter writer = null;
 
 	protected int currentPageNum = 0;
@@ -322,18 +322,28 @@ public class PPTWriter
 				+ red + green + blue + ";'>" ); //$NON-NLS-1$
 		// + text.getText( ) + "</span></div>\n" );
 
-		if ( fontInfo != null && fontInfo.getFontStyle( ) == Font.ITALIC )
+		boolean isItalic = fontInfo != null
+				&& ( fontInfo.getFontStyle( ) & Font.ITALIC ) != 0;
+		boolean isBold = fontInfo != null
+				&& ( fontInfo.getFontStyle( ) & Font.BOLD ) != 0;
+		if ( isItalic )
 		{
 			print( "<i>" );
-			print( text );
+		}
+		if ( isBold )
+		{
+			print( "<b>" );
+		}
+		print( text );
+		if ( isBold )
+		{
+			print( "</b>" );
+		}
+		if ( isItalic )
+		{
 			print( "</i>" );
 		}
-		else
-		{
-			print( text );
-		}
-		println( "</span></div>" );
-
+		println( "</span></div>" ); //$NON-NLS-1$
 		println( "</div>" ); //$NON-NLS-1$
 	}
 
@@ -581,8 +591,7 @@ public class PPTWriter
 		{
 			URL url = new URL( imageURI );
 			imageStream = url.openStream( );
-			imageData = new byte[imageStream.available( )];
-			imageStream.read( imageData );
+			imageData = getImageData( imageStream );
 			imageStream.close( );
 			imageStream = url.openStream( );
 			Image image = ImageIO.read( imageStream );
@@ -643,5 +652,18 @@ public class PPTWriter
 			exportImageDefn( imageName, imageTitle, imageWidth, imageHeight,
 					position.getX( ), position.getY( ) );
 		}
+	}
+
+	private byte[] getImageData( InputStream imageStream ) throws IOException
+	{
+		byte[] imageData;
+		ByteArrayOutputStream byteArrayStream = new ByteArrayOutputStream();
+		int data = -1;
+		while( (data = imageStream.read( ) ) >=0)
+		{
+			byteArrayStream.write( data );
+		}
+		imageData = byteArrayStream.toByteArray( );
+		return imageData;
 	}
 }
