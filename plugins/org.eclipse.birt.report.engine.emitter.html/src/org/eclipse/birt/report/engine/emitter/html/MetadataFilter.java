@@ -212,6 +212,7 @@ public class MetadataFilter implements IMetadataFilter
 		}
 		else if ( elementHandle instanceof DataItemHandle )
 		{
+			// FIXME Leon: data item text;
 			Boolean chacheResult = (Boolean) dataItemCache.get( elementHandle );
 			if ( chacheResult == null )
 			{
