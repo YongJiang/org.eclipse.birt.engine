@@ -12,11 +12,8 @@
 package org.eclipse.birt.report.engine.api;
 
 public interface IBookmarkInfo
+		extends
+			org.eclipse.birt.report.model.api.util.IBookmarkInfo
 {
 
-	String getBookmark( );
-
-	String getDisplayName( );
-
-	String getElementType( );
 }
