@@ -13,32 +13,15 @@ package org.eclipse.birt.report.engine.api.impl;
 
 import org.eclipse.birt.report.engine.api.IBookmarkInfo;
 
-public class BookmarkInfo implements IBookmarkInfo
+public class BookmarkInfo
+		extends
+			org.eclipse.birt.report.model.util.BookmarkInfo
+		implements
+			IBookmarkInfo
 {
-
-	private String displayName;
-	private String bookmark;
-	private String elementType;
 
 	public BookmarkInfo( String bookmark, String displayName, String elementType )
 	{
-		this.displayName = displayName;
-		this.bookmark = bookmark;
-		this.elementType = elementType;
-	}
-
-	public String getDisplayName( )
-	{
-		return displayName;
-	}
-
-	public String getBookmark( )
-	{
-		return bookmark;
-	}
-
-	public String getElementType( )
-	{
-		return elementType;
+		super( bookmark, displayName, elementType );
 	}
 }
