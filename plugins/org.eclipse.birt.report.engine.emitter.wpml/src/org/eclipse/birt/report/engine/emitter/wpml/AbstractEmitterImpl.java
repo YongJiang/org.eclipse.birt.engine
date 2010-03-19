@@ -172,8 +172,6 @@ public abstract class AbstractEmitterImpl
 
 	private boolean fixedLayout;
 
-	private int reportDpi;
-
 	public void initialize( IEmitterServices service ) throws EngineException
 	{
 		if ( service != null )
@@ -210,7 +208,6 @@ public abstract class AbstractEmitterImpl
 
 	public void start( IReportContent report )
 	{
-		reportDpi = PropertyUtil.getRenderDpi( report, 0 );
 		this.reportContent = report;
 		if ( null == layoutPreference )
 		{
@@ -308,21 +305,18 @@ public abstract class AbstractEmitterImpl
 
 	public void computePageProperties( IPageContent page )
 	{
-		pageWidth = WordUtil.convertTo( page.getPageWidth( ), 0, reportDpi );
+		pageWidth = WordUtil.convertTo( page.getPageWidth( ), 0 );
 		// 11 inch * 1440
-		pageHeight = WordUtil.convertTo( page.getPageHeight( ), 0, reportDpi );
+		pageHeight = WordUtil.convertTo( page.getPageHeight( ), 0 );
 
-		footerHeight = WordUtil.convertTo( page.getFooterHeight( ), 0,
-				reportDpi );
-		headerHeight = WordUtil.convertTo( page.getHeaderHeight( ), 0,
-				reportDpi );
+		footerHeight = WordUtil.convertTo( page.getFooterHeight( ), 0 );
+		headerHeight = WordUtil.convertTo( page.getHeaderHeight( ), 0 );
 
-		topMargin = WordUtil.convertTo( page.getMarginTop( ), 0, reportDpi );
-		bottomMargin = WordUtil.convertTo( page.getMarginBottom( ), 0,
-				reportDpi );
+		topMargin = WordUtil.convertTo( page.getMarginTop( ), 0 );
+		bottomMargin = WordUtil.convertTo( page.getMarginBottom( ), 0 );
 
-		leftMargin = WordUtil.convertTo( page.getMarginLeft( ), 0, reportDpi );
-		rightMargin = WordUtil.convertTo( page.getMarginRight( ), 0, reportDpi );
+		leftMargin = WordUtil.convertTo( page.getMarginLeft( ), 0 );
+		rightMargin = WordUtil.convertTo( page.getMarginRight( ), 0 );
 
 		contentWidth = pageWidth - leftMargin - rightMargin;
 
@@ -370,10 +364,8 @@ public abstract class AbstractEmitterImpl
 			wordWriter.insertHiddenParagraph( );
 		}
 
-		int width = WordUtil.convertTo( list.getWidth( ), context
-				.getCurrentWidth( ), reportDpi );
-		width = Math.min( width, context.getCurrentWidth( ) );
-		wordWriter.startTable( list.getComputedStyle( ), width );
+		wordWriter.startTable( list.getComputedStyle( ), context
+				.getCurrentWidth( ) );
 	}
 
 	public void startListBand( IListBandContent listBand )
@@ -405,7 +397,7 @@ public abstract class AbstractEmitterImpl
 				isHeader = true;
 			}
 
-			double height = WordUtil.convertTo( row.getHeight( ), reportDpi );
+			double height = WordUtil.convertTo( row.getHeight( ) );
 
 			wordWriter.startTableRow( height, isHeader, row.getTable( )
 					.isHeaderRepeat( ), fixedLayout );
@@ -468,8 +460,7 @@ public abstract class AbstractEmitterImpl
 	{
 		if ( cellWidth == 0 )
 			return;
-		int cellHeight = WordUtil.convertTo( getCellHeight( cell ), 0,
-				reportDpi ) / 20;
+		int cellHeight = WordUtil.convertTo( getCellHeight( cell ), 0 ) / 20;
 		if ( cellHeight == 0 )
 			return;
 
@@ -529,7 +520,7 @@ public abstract class AbstractEmitterImpl
 		}
 
 		int width = WordUtil.convertTo( table.getWidth( ), context
-				.getCurrentWidth( ), reportDpi );
+				.getCurrentWidth( ) );
 		width = Math.min( width, context.getCurrentWidth( ) );
 		int[] cols = computeTblColumnWidths( table, width );
 		wordWriter
@@ -624,8 +615,8 @@ public abstract class AbstractEmitterImpl
 	public void endListBand( IListBandContent listBand )
 	{
 		adjustInline( );
-		wordWriter.endTableCell( context.needEmptyP() );
 		context.endCell( );
+		wordWriter.endTableCell( true );
 		wordWriter.endTableRow( );
 	}
 
@@ -689,10 +680,9 @@ public abstract class AbstractEmitterImpl
 		String mimeType = image.getMIMEType( );
 		String extension = image.getExtension( );
 		String altText = image.getAltText( );
-		double height = WordUtil.convertImageSize( image.getHeight( ),
-				0, reportDpi );
-		double width = WordUtil.convertImageSize( image.getWidth( ), 0,
-				reportDpi );
+		double height = WordUtil.convertImageSize( image.getHeight( ), 0 );
+		double width = WordUtil.convertImageSize( image.getWidth( ), 0 );
+
 		context.addContainer( false );
 
 		if ( FlashFile.isFlash( mimeType, uri, extension ) )
@@ -719,18 +709,10 @@ public abstract class AbstractEmitterImpl
 				return;
 			}
 
-			int imageFileWidthDpi = imageInfo.getPhysicalWidthDpi( ) == -1
-					? 0
-					: imageInfo.getPhysicalWidthDpi( );
-			int imageFileHeightDpi = imageInfo.getPhysicalHeightDpi( ) == -1
-					? 0
-					: imageInfo.getPhysicalHeightDpi( );
-			height = WordUtil.convertImageSize( image.getHeight( ), imageInfo
-					.getHeight( ), PropertyUtil.getImageDpi( image,
-					imageFileHeightDpi, 0 ) );
-			width = WordUtil.convertImageSize( image.getWidth( ), imageInfo
-					.getWidth( ), PropertyUtil.getImageDpi( image,
-					imageFileWidthDpi, 0 ) );
+			height = WordUtil.convertImageSize( image.getHeight( ),
+					imageInfo.getHeight( ) );
+			width = WordUtil.convertImageSize( image.getWidth( ),
+					imageInfo.getWidth( ) );
 
 			writeBookmark( image );
 			writeToc( image );
@@ -919,16 +901,8 @@ public abstract class AbstractEmitterImpl
 					int offset = ch.getOffset( );
 					int length = ch.getLength( );
 					fontFamily = getFontFamily( computedStyle, ch );
-					String string = null;
-					if ( ch == Chunk.HARD_LINE_BREAK)
-					{
-						string = ch.getText();
-					}
-					else
-					{
-						string = txt.substring(offset, offset + length);
-					}
-					wordWriter.writeContent( type, string, computedStyle, inlineStyle,
+					wordWriter.writeContent( type, txt.substring( offset,
+							offset + length ), computedStyle, inlineStyle,
 							fontFamily, hyper, inlineFlag, textFlag,
 							paragraphWidth );
 					textFlag = fontSplitter.hasMore( )
@@ -1186,8 +1160,7 @@ public abstract class AbstractEmitterImpl
 			}
 			else
 			{
-				tblColumns[i] = WordUtil.convertTo( col.getWidth( ), tblWidth,
-						reportDpi );
+				tblColumns[i] = WordUtil.convertTo( col.getWidth( ), tblWidth );
 				total += tblColumns[i];
 			}
 		}

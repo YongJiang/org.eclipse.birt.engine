@@ -14,7 +14,6 @@ package org.eclipse.birt.report.engine.adapter;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.birt.core.exception.BirtException;
 import org.eclipse.birt.data.engine.api.IBaseExpression;
 import org.eclipse.birt.data.engine.api.IBinding;
 import org.eclipse.birt.data.engine.api.IConditionalExpression;
@@ -26,10 +25,6 @@ import org.eclipse.birt.data.engine.api.querydefn.ScriptExpression;
 import org.eclipse.birt.data.engine.core.DataException;
 import org.eclipse.birt.data.engine.olap.api.query.IBaseCubeQueryDefinition;
 import org.eclipse.birt.report.data.adapter.api.DataAdapterUtil;
-import org.eclipse.birt.report.data.adapter.api.DataRequestSession;
-import org.eclipse.birt.report.data.adapter.api.DataSessionContext;
-import org.eclipse.birt.report.data.adapter.api.IModelAdapter;
-import org.eclipse.birt.report.data.adapter.impl.DataRequestSessionImpl;
 import org.eclipse.birt.report.engine.api.EngineException;
 import org.eclipse.birt.report.engine.ir.Expression;
 
@@ -42,9 +37,7 @@ public final class ExpressionUtil
 	private static final String TOTAL_PREFIX = "TOTAL_COLUMN_";
 
 	private int totalColumnSuffix = 0;
-	
-	private IModelAdapter adapter = null;
-	
+
 	public ITotalExprBindings prepareTotalExpressions( List<Expression> exprs, IDataQueryDefinition queryDefn ) throws EngineException
 	{
 		return prepareTotalExpressions( exprs, null, queryDefn );
@@ -60,7 +53,6 @@ public final class ExpressionUtil
 			String groupName, IDataQueryDefinition queryDefn )
 			throws EngineException
 	{
-		
 
 		TotalExprBinding result = new TotalExprBinding( );
 		List l = new ArrayList( );
@@ -530,47 +522,22 @@ public final class ExpressionUtil
 		return true;
 	}
 
-	private String getTextFromScript( Expression expr )
-	{
-		if ( expr instanceof Expression.Script
-				&& "bre".equals( ( (Expression.Script) expr ).getLanguage( ) ) )
-		{
-			ScriptExpression scriptExpr = null;
-			try
-			{
-				scriptExpr = getModelAdapter( ).adaptJSExpression(
-						expr.getScriptText( ),
-						( (Expression.Script) expr ).getLanguage( ) );
-			}
-			catch ( Exception ex )
-			{
-
-			}
-			return scriptExpr.getText( );
-		}
-		return expr.getScriptText( );
-	}
-
 	public IConditionalExpression createConditionalExpression(
 			Expression testExpression, String operator, Expression value1,
 			Expression value2 )
 	{
-		String expr = null, tempV1 = null, tempV2 = null;
-		if ( testExpression != null )
-		{
-			expr = getTextFromScript( testExpression );
-		}
+		String tempV1 = null, tempV2 = null;
 		if ( value1 != null )
 		{
-			tempV1 = getTextFromScript( value1 );
+			tempV1 = value1.getScriptText( );
 		}
 		if ( value2 != null )
 		{
-			tempV2 = getTextFromScript( value2 );
+			tempV2 = value2.getScriptText( );
 		}
-		ConditionalExpression expression = new ConditionalExpression( expr,
-				DataAdapterUtil.adaptModelFilterOperator( operator ), tempV1,
-				tempV2 );
+		ConditionalExpression expression = new ConditionalExpression(
+				testExpression.getScriptText( ), DataAdapterUtil
+						.adaptModelFilterOperator( operator ), tempV1, tempV2 );
 		return ExpressionUtil.transformConditionalExpression( expression );
 	}
 
@@ -581,26 +548,12 @@ public final class ExpressionUtil
 		ArrayList<String> values = new ArrayList<String>( valueList.size( ) );
 		for ( Expression expr : valueList )
 		{
-			values.add( getTextFromScript( expr ) );
+			values.add( expr.getScriptText( ) );
 		}
-		String expr = null;
-		if ( testExpression != null )
-		{
-			expr = getTextFromScript( testExpression );
-		}
-		ConditionalExpression expression = new ConditionalExpression( expr,
-				DataAdapterUtil.adaptModelFilterOperator( operator ), values );
+		ConditionalExpression expression = new ConditionalExpression(
+				testExpression.getScriptText( ), DataAdapterUtil
+						.adaptModelFilterOperator( operator ), values );
 		return ExpressionUtil.transformConditionalExpression( expression );
-	}
-
-	private IModelAdapter getModelAdapter( ) throws BirtException
-	{
-		if ( adapter == null )
-		{
-			DataRequestSession session = new DataRequestSessionImpl( new DataSessionContext( DataSessionContext.MODE_DIRECT_PRESENTATION ) );
-			adapter = session.getModelAdaptor( );
-		}
-		return adapter;
 	}
 }
 
