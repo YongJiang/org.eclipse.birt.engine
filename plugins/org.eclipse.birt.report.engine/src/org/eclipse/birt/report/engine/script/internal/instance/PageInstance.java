@@ -21,7 +21,7 @@ import org.eclipse.birt.report.engine.api.script.instance.IReportItemInstance;
 import org.eclipse.birt.report.engine.content.IContent;
 import org.eclipse.birt.report.engine.content.impl.PageContent;
 import org.eclipse.birt.report.engine.executor.ExecutionContext;
-import org.eclipse.birt.report.engine.ir.ReportItemDesign;
+import org.eclipse.birt.report.engine.ir.ReportElementDesign;
 import org.eclipse.birt.report.engine.script.internal.ElementUtil;
 
 public class PageInstance implements IPageInstance
@@ -45,20 +45,23 @@ public class PageInstance implements IPageInstance
 		ArrayList<IReportItemInstance> instances = new ArrayList<IReportItemInstance>( );
 		for ( IContent content : contents )
 		{
-			ReportItemDesign design = (ReportItemDesign) content
-					.getGenerateBy( );
-			if ( design.getID( ) == elementId )
+			Object generateBy = content.getGenerateBy( );
+			if ( generateBy instanceof ReportElementDesign )
 			{
-				try
+				ReportElementDesign design = (ReportElementDesign) generateBy;
+				if ( design.getID( ) == elementId )
 				{
-					ReportItemInstance instance = (ReportItemInstance) ElementUtil
-							.getInstance( content, context,
-									RunningState.PAGEBREAK );
-					instances.add( instance );
-				}
-				catch ( BirtException ex )
-				{
-					throw new ScriptException( ex );
+					try
+					{
+						ReportItemInstance instance = (ReportItemInstance) ElementUtil
+						        .getInstance( content, context,
+						                      RunningState.PAGEBREAK );
+						instances.add( instance );
+					}
+					catch ( BirtException ex )
+					{
+						throw new ScriptException( ex );
+					}
 				}
 			}
 		}
@@ -76,20 +79,23 @@ public class PageInstance implements IPageInstance
 		ArrayList<IReportItemInstance> instances = new ArrayList<IReportItemInstance>( );
 		for ( IContent content : contents )
 		{
-			ReportItemDesign design = (ReportItemDesign) content
-					.getGenerateBy( );
-			if ( elementName.equals( design.getName( ) ) )
+			Object generateBy = content.getGenerateBy( );
+			if ( generateBy instanceof ReportElementDesign )
 			{
-				try
+				ReportElementDesign design = (ReportElementDesign) generateBy;
+				if ( elementName.equals( design.getName( ) ) )
 				{
-					ReportItemInstance instance = (ReportItemInstance) ElementUtil
-							.getInstance( content, context,
-									RunningState.PAGEBREAK );
-					instances.add( instance );
-				}
-				catch ( BirtException ex )
-				{
-					throw new ScriptException( ex );
+					try
+					{
+						ReportItemInstance instance = (ReportItemInstance) ElementUtil
+						        .getInstance( content, context,
+						                      RunningState.PAGEBREAK );
+						instances.add( instance );
+					}
+					catch ( BirtException ex )
+					{
+						throw new ScriptException( ex );
+					}
 				}
 			}
 		}
