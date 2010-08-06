@@ -37,15 +37,11 @@ public class CSVUtil
 	 */
 	public static String quoteCSVValue( String value, String sep )
 	{
-		if ( value == null )
+		if ( value == null || value.length() == 0 )
 		{
-			return null;
+			return ""; //$NON-NLS-1$
 		}
-		else if ( value.length( ) == 0 )
-		{
-			return QUOTE + QUOTE;
-		}
-
+	
 		// escape quotes
 		value = value.replaceAll( QUOTE, QUOTE + QUOTE );
 		
@@ -80,11 +76,7 @@ public class CSVUtil
 				buf.append( sep );
 			}
 
-			String value = CSVUtil.quoteCSVValue( values[i], sep );
-			if ( value != null )
-			{
-				buf.append( value );
-			}
+			buf.append( CSVUtil.quoteCSVValue( values[i] , sep ) );
 		}
 		buf.append( CSVUtil.NEWLINE );
 		return buf.toString();
